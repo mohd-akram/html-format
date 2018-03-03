@@ -1,0 +1,38 @@
+{
+  "name": "html-format",
+  "version": "1.0.0",
+  "description": "Format HTML strings.",
+  "main": "index.js",
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^10.0.4",
+    "ts-node": "^6.0.3",
+    "tslint": "^5.10.0",
+    "typescript": "^2.8.3"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node test.ts",
+    "prepare": "npm run build",
+    "version": "npm test",
+    "postversion": "git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohd-akram/html-format.git"
+  },
+  "keywords": [
+    "html",
+    "format"
+  ],
+  "author": "Mohamed Akram",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mohd-akram/html-format/issues"
+  },
+  "homepage": "https://github.com/mohd-akram/html-format#readme"
+}
