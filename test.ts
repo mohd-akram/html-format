@@ -85,15 +85,18 @@ test(
 );
 
 // Do not format pre tag content
-test('<pre>s  p  a  c  e</pre>', '<pre>s  p  a  c  e</pre>');
+test(
+  '<pre  class= "code">  s  p  a  c  e  </pre>  s',
+  '<pre class="code">  s  p  a  c  e  </pre> s'
+);
 
 // Do not format style tag content
 test('<style>body {  }</style>', '<style>body {  }</style>');
 
 // Do not format script tag content
 test(
-  '<script>console.log(  )</script>',
-  '<script>console.log(  )</script>'
+  '<script  src="js/main.js">  console.log(  )  </script>',
+  '<script src="js/main.js">  console.log(  )  </script>'
 );
 
 // Do not indent after doctype
@@ -103,6 +106,22 @@ test('<!doctype html>\n<html></html>', '<!doctype html>\n<html></html>');
 test(
   '<!-- useless comment -->\n<div></div>',
   '<!-- useless comment -->\n<div></div>'
+);
+
+// Do not parse tags inside special elements
+test(
+  '<script>html = "</div>  </div>"</script><div>  </div>',
+  '<script>html = "</div>  </div>"</script><div> </div>'
+);
+test(
+  '<!--< div>\n</div>  -->\n<div  ></div>',
+  '<!--< div>\n</div>  -->\n<div></div>'
+);
+
+// Format element after empty comment
+test(
+  '<!---->\n< div>  </div>',
+  '<!---->\n<div> </div>'
 );
 
 // Different indent

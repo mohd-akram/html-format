@@ -53,14 +53,14 @@ function nextToken(s: string, i: number) {
 const voidTags = [
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
   'keygen', 'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr',
-  '!doctype', '!--'
+  '!doctype', '--'
 ];
 
 function parseTokenValue(value: string) {
   let tagName = value.replace(/^<\/?|>$/g, '').toLowerCase();
 
-  if (tagName.startsWith('!--'))
-    tagName = '!--';
+  if (tagName.startsWith('!--') || tagName.endsWith('--'))
+    tagName = '--';
 
   const isTagStart = /</.test(value);
   const isTagEnd = />/.test(value);
@@ -80,7 +80,9 @@ function format(html: string, indent = '  ', width = 80) {
 
   let inStartTag = false;
   let inEndTag = false;
+  let inPre = false;
   let inSpecialElement = false;
+  let tag = '';
   let indentLevel = 0;
 
   let prevState: any = {};
@@ -95,29 +97,42 @@ function format(html: string, indent = '  ', width = 80) {
       parseTokenValue(tokenValue);
 
     // Token adjustments for edge cases
-    // Remove space before tag name
-    if (isTagStart && !tagName) {
-      i = token.end;
-      token = nextToken(html, i);
-      if (!token)
-        break;
-      tokenValue += token.value;
-      ({ isTagStart, isTagEnd, isStartTag, isEndTag, tagName } =
-        parseTokenValue(tokenValue));
-    }
-    // Split attributes stuck together
-    if (!isTagStart && (inStartTag || inEndTag)) {
-      // If attribute has end quote followed by another attribute
-      const regex = /[^=]"[^>]/g;
-      const res = regex.exec(tokenValue);
-      if (res && token.end != token.start + res.index + 2) {
-        token.end = token.start + res.index + 2;
-        tokenValue = token.value;
+    if (!inSpecialElement) {
+      // Remove space before tag name
+      if (isTagStart && !tagName) {
+        i = token.end;
+        token = nextToken(html, i);
+        if (!token)
+          break;
+        tokenValue += token.value;
         ({ isTagStart, isTagEnd, isStartTag, isEndTag, tagName } =
           parseTokenValue(tokenValue));
-        pendingWhitespace = indent;
+      }
+      // Split attributes stuck together
+      if (!isTagStart && (inStartTag || inEndTag)) {
+        // If attribute has end quote followed by another attribute
+        const regex = /[^=]"[^>]/g;
+        const res = regex.exec(tokenValue);
+        if (res && token.end != token.start + res.index + 2) {
+          token.end = token.start + res.index + 2;
+          tokenValue = token.value;
+          ({ isTagStart, isTagEnd, isStartTag, isEndTag, tagName } =
+            parseTokenValue(tokenValue));
+          pendingWhitespace = indent;
+        }
       }
     }
+
+    if (!inSpecialElement && isStartTag)
+      tag = tagName;
+
+    const isEndSpecialTag =
+      ((isEndTag && tagName != '--') || (isTagEnd && tagName == '--')) &&
+      tagName == tag;
+
+    // Ignore any tags inside special elements
+    if (inSpecialElement && !isEndSpecialTag)
+      isTagStart = isTagEnd = isStartTag = isEndTag = false;
 
     // Current State
     if (isStartTag)
@@ -126,8 +141,10 @@ function format(html: string, indent = '  ', width = 80) {
       inEndTag = true;
     if (isEndTag && !isStartTag) // A void tag will be both
       --indentLevel;
-    if (isTagStart && ['pre', 'script', 'style'].includes(tagName))
-      inSpecialElement = !inSpecialElement;
+
+    const isStartSpecialTag =
+      (inStartTag && isTagEnd && ['script', 'style'].includes(tag)) ||
+      (isStartTag && tag == '--');
 
     // Convenience
     const inTag = inStartTag || inEndTag;
@@ -137,7 +154,8 @@ function format(html: string, indent = '  ', width = 80) {
     const ignoreSpace = inTag && (
       /^[=">]/.test(tokenValue) || /(^|=)"$/.test(prevState.tokenValue)
     );
-    if (inSpecialElement && !inTag)
+    // Preserve whitespace inside special and pre elements
+    if (inSpecialElement || inPre)
       output.push(tokenWhitespaceValue);
     else if (whitespace && !ignoreSpace) {
       const numNewlines = (whitespace.match(/\n/g) || []).length;
@@ -166,6 +184,14 @@ function format(html: string, indent = '  ', width = 80) {
     };
 
     // Next state
+    if (isStartSpecialTag)
+      inSpecialElement = true;
+    if (isEndSpecialTag)
+      inSpecialElement = false;
+    if (inStartTag && isTagEnd && tag == 'pre')
+      inPre = true;
+    if (isEndTag && tagName == 'pre')
+      inPre = false;
     if (inStartTag && isTagEnd && !inEndTag) // A void tag is both start & end
       ++indentLevel;
     if (isTagEnd)
