@@ -152,7 +152,7 @@ function format(html: string, indent = '  ', width = 80) {
     // Whitespace
     const whitespace = tokenWhitespaceValue || prevState.pendingWhitespace;
     const ignoreSpace = inTag && (
-      /^[=">]/.test(tokenValue) || /(^|=)"$/.test(prevState.tokenValue)
+      /^[=">]([^=]|$)/.test(tokenValue) || /(^|=)"$/.test(prevState.tokenValue)
     );
     // Preserve whitespace inside special and pre elements
     if (inSpecialElement || inPre)

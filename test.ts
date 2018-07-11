@@ -124,6 +124,12 @@ test(
   '<!---->\n<div> </div>'
 );
 
+// Do not remove space before double/triple equals
+test(
+  `<ng-container *ngIf="formType === 'signup'">`,
+  `<ng-container *ngIf="formType === 'signup'">`
+);
+
 // Different indent
 test(
   '<body>\n<main class="bg">   </main>\n</body>',
