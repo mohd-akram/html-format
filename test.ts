@@ -64,11 +64,23 @@ test(
 
 // Remove extra attribute space
 test(
-  '<div id="container"  class="grid" ></div>',
+  '<div id="container"  class="grid"></div>',
   '<div id="container" class="grid"></div>'
 );
 test(
-  '<div id = "container"  class="grid"></div>',
+  '<div id="container" class ="grid"></div>',
+  '<div id="container" class="grid"></div>'
+);
+test(
+  '<div id="container" class= "grid"></div>',
+  '<div id="container" class="grid"></div>'
+);
+test(
+  '<div id="container" class="grid" ></div>',
+  '<div id="container" class="grid"></div>'
+);
+test(
+  '<div  id = "container"  class = "grid" ></div>',
   '<div id="container" class="grid"></div>'
 );
 
@@ -142,4 +154,16 @@ test(
   '<body>\n<main class="bg">   </main>\n</body>',
   '<body>\n    <main\n        class="bg">\n    </main>\n</body>',
   ' '.repeat(4), 20
+);
+
+// Handle space around non-attribute quotes correctly
+test(
+  '<a {{#if (equals pageLink "/users") }} class="is-active" {{/if}}>Users</a>',
+  '<a {{#if (equals pageLink "/users") }} class="is-active" {{/if}}>Users</a>',
+);
+
+// Handle space inside non-attribute quotes correctly
+test(
+  '<a {{#if (equals value " do not show ") }} hidden {{/if}}>Users</a>',
+  '<a {{#if (equals value " do not show ") }} hidden {{/if}}>Users</a>',
 );

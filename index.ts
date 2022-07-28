@@ -111,7 +111,7 @@ function format(html: string, indent = '  ', width = 80) {
       // Split attributes stuck together
       if (!isTagStart && (inStartTag || inEndTag)) {
         // If attribute has end quote followed by another attribute
-        const regex = /[^=]"[^>]/g;
+        const regex = /[^=]"\w/g;
         const res = regex.exec(tokenValue);
         if (res && token.end != token.start + res.index + 2) {
           token.end = token.start + res.index + 2;
@@ -151,9 +151,11 @@ function format(html: string, indent = '  ', width = 80) {
 
     // Whitespace
     const whitespace = tokenWhitespaceValue || prevState.pendingWhitespace;
-    const ignoreSpace = inTag && (
-      /^[=">]([^=]|$)/.test(tokenValue) || /(^|=)"$/.test(prevState.tokenValue)
-    );
+    // ignore possible equality operators == and !=
+    const isAttrStart =
+      /^=([^!=]|$)/.test(tokenValue) ||
+      (/^"/.test(tokenValue) && /(^|[^!=])=$/.test(prevState.tokenValue));
+    const ignoreSpace = inTag && (isAttrStart || /^>/.test(tokenValue));
     // Preserve whitespace inside special and pre elements
     if (inSpecialElement || inPre)
       output.push(tokenWhitespaceValue);
@@ -179,9 +181,7 @@ function format(html: string, indent = '  ', width = 80) {
 
     output.push(tokenValue);
 
-    prevState = {
-      pendingWhitespace, tokenValue
-    };
+    prevState = { pendingWhitespace, tokenValue };
 
     // Next state
     if (isStartSpecialTag)
