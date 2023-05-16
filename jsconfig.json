@@ -1,0 +1,15 @@
+{
+  "files": ["index.js"],
+  "compilerOptions": {
+    "checkJs": true,
+    "declaration": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "outDir": ".",
+    "target": "es2022",
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  }
+}
