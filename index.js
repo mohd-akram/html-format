@@ -4,18 +4,23 @@ const quotedAttrValue = String.raw`"(?<quotedAttrValue>[^"]*)"`;
 const singleQuotedAttrValue = String.raw`'(?<singleQuotedAttrValue>[^']*)'`;
 const unquotedAttrValue = String.raw`(?<unquotedAttrValue>[^\s>"']*)`;
 
+const attrName = String.raw`[^=\s>/"']+(?=[=>\s]|$)`;
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
-const attr = String.raw`(?<attrSpace>\s+)(?<attrName>[^=\s>/]+)(?:\s*=\s*(?:${attrValue}))?`;
+const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:(?<attrName>${attrName})(?:\s*=\s*(?:${attrValue}))?|(?<attrText>[^\s>]+))`;
 
 const tokens = {
   comment: String.raw`<!--.*?-->`,
   dtd: String.raw`<![^>]+>`,
-  startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*/?\s*>`,
+  startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
   endTag: String.raw`<\s*/(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
   text: String.raw`[^<\s]+`,
   wildcard: String.raw`.+`,
 };
+
+const grammar = Object.entries(tokens)
+  .map(([k, v]) => `(?<${k}>${v})`)
+  .join("|");
 
 /**
  *
@@ -55,12 +60,7 @@ const voidTags = new Set([
 ]);
 
 function format(/** @type {string} */ html, indent = "  ", width = 80) {
-  const lexer = new RegExp(
-    Object.entries(tokens)
-      .map(([k, v]) => `(?<${k}>${v})`)
-      .join("|"),
-    "gys"
-  );
+  const lexer = new RegExp(grammar, "gys");
   const attrLexer = new RegExp(attr, "gy");
 
   /** @type {string[]} */
@@ -99,6 +99,10 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
   };
 
   for (const token of getTokens(lexer, html)) {
+    // For testing
+    if (/** @type {any} */ (format).__strict && token.groups.wildcard)
+      throw new Error("Unexpected wildcard");
+
     if (token.groups.endTag) {
       const tagName = token.groups.endTagName.toLowerCase();
       if (tagName == specialElement) specialElement = null;
@@ -138,19 +142,39 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
                 attrLexer.exec(token.groups.attrs)
               ))
           ) {
-            addOutput(
-              /\n/.test(attrToken.groups.attrSpace) ? "\n" : " ",
-              `${attrToken.groups.attrName}${
-                attrToken.groups.quotedAttrValue
-                  ? `="${attrToken.groups.quotedAttrValue}"`
-                  : attrToken.groups.singleQuotedAttrValue
-                  ? `='${attrToken.groups.singleQuotedAttrValue}'`
-                  : attrToken.groups.unquotedAttrValue
-                  ? `=${attrToken.groups.quotedAttrValue}`
-                  : ""
-              }`
-            );
             ({ lastIndex } = attrLexer);
+            // Ignore slash used in self-closing tag
+            if (
+              lastIndex == token.groups.attrs.length &&
+              token.groups.attrText == "/"
+            )
+              continue;
+
+            // For testing
+            if (
+              /** @type {any} */ (format).__strict &&
+              attrToken.groups.attrText
+            )
+              throw new Error("Unexpected attr text");
+
+            if (attrToken.groups.attrText) {
+              if (attrToken.groups.attrSpace)
+                addOutput(/\n/.test(attrToken.groups.attrSpace) ? "\n" : " ");
+              addOutput(attrToken.groups.attrText);
+            } else {
+              addOutput(
+                /\n/.test(attrToken.groups.attrSpace) ? "\n" : " ",
+                `${attrToken.groups.attrName}${
+                  attrToken.groups.quotedAttrValue
+                    ? `="${attrToken.groups.quotedAttrValue}"`
+                    : attrToken.groups.singleQuotedAttrValue
+                    ? `='${attrToken.groups.singleQuotedAttrValue}'`
+                    : attrToken.groups.unquotedAttrValue
+                    ? `=${attrToken.groups.quotedAttrValue}`
+                    : ""
+                }`
+              );
+            }
           }
           if (lastIndex != token.groups.attrs.length)
             throw new Error("Failed to parse attributes");

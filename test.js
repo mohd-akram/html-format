@@ -1,3 +1,4 @@
+// @ts-check
 const nodeTest = require("node:test");
 
 const assert = require("assert/strict");
@@ -9,11 +10,13 @@ const format = require("./index.js");
  * @param {string} name
  * @param {string} input
  * @param {string} expected
+ * @param {boolean} [strict]
  * @param {string} [indent]
  * @param {number} [width]
  */
-function test(name, input, expected, indent, width) {
+function test(name, input, expected, strict = true, indent, width) {
   nodeTest.test(name, () => {
+    /** @type {any} */ (format).__strict = strict;
     const actual = format(input, indent, width);
     assert.equal(actual, expected);
     if (width == undefined) width = 80;
@@ -54,6 +57,12 @@ test(
   "Fix wrong indents",
   "<body>\n <main>\n <div>\n  </div>\n   </main>\n </body>",
   "<body>\n  <main>\n    <div>\n    </div>\n  </main>\n</body>"
+);
+
+test(
+  "Space attributes",
+  '<div id="container"class="grid"></div>',
+  '<div id="container" class="grid"></div>'
 );
 
 test(
@@ -165,6 +174,7 @@ test(
   "Different indent",
   '<body>\n<main class="bg">   </main>\n</body>',
   '<body>\n    <main class="bg"> </main>\n</body>',
+  true,
   " ".repeat(4)
 );
 
@@ -172,6 +182,7 @@ test(
   "Different indent and width",
   '<body>\n<main class="bg">   </main>\n</body>',
   '<body>\n    <main class="bg"\n        > </main>\n</body>',
+  true,
   " ".repeat(4),
   20
 );
@@ -179,17 +190,31 @@ test(
 test(
   "Handle space around non-attribute quotes correctly",
   '<a {{#if (equals pageLink "/users") }} class="is-active" {{/if}}>Users</a>',
-  '<a {{#if (equals pageLink "/users") }} class="is-active" {{/if}}>Users</a>'
+  '<a {{#if (equals pageLink "/users") }} class="is-active" {{/if}}>Users</a>',
+  false
 );
 
 test(
   "Handle space inside non-attribute quotes correctly",
   '<a {{#if (equals value " do not show ") }} hidden {{/if}}>Users</a>',
-  '<a {{#if (equals value " do not show ") }} hidden {{/if}}>Users</a>'
+  '<a {{#if (equals value " do not show ") }} hidden {{/if}}>Users</a>',
+  false
 );
 
-test("Handle invalid HTML", "<", "<");
+test(
+  "Handle invalid HTML",
+  "< this is a very long sentence to test the regex",
+  "< this is a very long sentence to test the regex",
+  false
+);
 
 test("Void tags work correctly", "<br>\n<br>", "<br>\n<br>");
 
 test("Handle self-closing tag", "<br / >", "<br>");
+
+test(
+  "Handle arbitrary text in tag",
+  '<div {{#if 1}}class="active"{{/if}}>\nstuff\n</div>',
+  '<div {{#if 1}}class="active"{{/if}}>\n  stuff\n</div>',
+  false
+);
