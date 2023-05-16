@@ -83,13 +83,13 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
   const addOutput = (/** @type {string[]} */ ...args) => {
     for (const s of args) {
-      const pos = s.lastIndexOf("\n");
-      if (pos != -1) lineLength = s.length - pos - 1;
       if (!specialElement) {
         if (s == "\n") pendingIndent = true;
         else {
+          const newline = s.indexOf("\n");
+          const len = newline == -1 ? s.length : newline;
           if (
-            lineLength + s.length > width &&
+            lineLength + len > width &&
             /^[ \t]+$/.test(output[output.length - 1])
           ) {
             output.pop();
@@ -101,9 +101,11 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
             pendingIndent = false;
             lineLength += ind.length;
           }
-          lineLength += s.length;
         }
       }
+      const pos = s.lastIndexOf("\n");
+      if (pos == -1) lineLength += s.length;
+      else lineLength = s.length - pos - 1;
       output.push(s);
     }
   };
