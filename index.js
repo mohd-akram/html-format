@@ -8,8 +8,8 @@ const attrName = String.raw`[^=\s>/"']+(?=[=>\s]|$)`;
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
 
 // Preserve strings in templates and such
-const doubleQuotedString = String.raw`"(\\.|[^\\"])*"`;
-const singleQuotedString = String.raw`'(\\.|[^\\'])*'`;
+const doubleQuotedString = String.raw`"(\\.|[^\\"\n])*"`;
+const singleQuotedString = String.raw`'(\\.|[^\\'\n])*'`;
 const quotedString = String.raw`${doubleQuotedString}|${singleQuotedString}`;
 
 const attrText = String.raw`(?:${quotedString})|[^\s>]+`;
@@ -23,7 +23,7 @@ const tokens = {
   space: String.raw`\s+`,
   quotedString,
   text: String.raw`[^<\s'"]+`,
-  wildcard: String.raw`.+`,
+  wildcard: String.raw`.+?`,
 };
 
 const grammar = Object.entries(tokens)

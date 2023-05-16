@@ -218,6 +218,13 @@ test(
 );
 
 test(
+  "Ignore quoted strings with newlines",
+  "Collector's  \n<div>\nstuff\n</div>'",
+  "Collector's\n<div>\n  stuff\n</div>'",
+  false
+);
+
+test(
   "Handle invalid HTML",
   "< this is a very long sentence to test the regex",
   "< this is a very long sentence to test the regex",
