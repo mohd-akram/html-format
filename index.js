@@ -6,7 +6,14 @@ const unquotedAttrValue = String.raw`(?<unquotedAttrValue>[^\s>"']*)`;
 
 const attrName = String.raw`[^=\s>/"']+(?=[=>\s]|$)`;
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
-const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:(?<attrName>${attrName})(?:\s*=\s*(?:${attrValue}))?|(?<attrText>[^\s>]+))`;
+
+// Preserve strings in templates and such
+const doubleQuotedString = String.raw`"(\\.|[^\\"])*"`;
+const singleQuotedString = String.raw`'(\\.|[^\\'])*'`;
+const quotedString = String.raw`${doubleQuotedString}|${singleQuotedString}`;
+
+const attrText = String.raw`(?:${quotedString})|[^\s>]+`;
+const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:(?<attrName>${attrName})(?:\s*=\s*(?:${attrValue}))?|(?<attrText>${attrText}))`;
 
 const tokens = {
   comment: String.raw`<!--.*?-->`,
@@ -14,7 +21,8 @@ const tokens = {
   startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
   endTag: String.raw`<\s*/(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
-  text: String.raw`[^<\s]+`,
+  quotedString,
+  text: String.raw`[^<\s'"]+`,
   wildcard: String.raw`.+`,
 };
 
@@ -118,7 +126,8 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
       } else if (
         token.groups.dtd ||
         token.groups.comment ||
-        token.groups.wildcard
+        token.groups.wildcard ||
+        token.groups.quotedString
       ) {
         addOutput(token[0]);
       } else if (token.groups.text) {
@@ -136,6 +145,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
         if (token.groups.attrs) {
           let { lastIndex } = attrLexer;
           let attrToken;
+          let lastToken;
           while (
             (attrToken =
               /** @type {RegExpExecArray & { groups: Record<string, string> }} */ (
@@ -162,8 +172,9 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
                 addOutput(/\n/.test(attrToken.groups.attrSpace) ? "\n" : " ");
               addOutput(attrToken.groups.attrText);
             } else {
+              if (attrToken.groups.attrSpace || !lastToken?.groups.attrText)
+                addOutput(/\n/.test(attrToken.groups.attrSpace) ? "\n" : " ");
               addOutput(
-                /\n/.test(attrToken.groups.attrSpace) ? "\n" : " ",
                 `${attrToken.groups.attrName}${
                   attrToken.groups.quotedAttrValue
                     ? `="${attrToken.groups.quotedAttrValue}"`
@@ -175,6 +186,8 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
                 }`
               );
             }
+
+            lastToken = attrToken;
           }
           if (lastIndex != token.groups.attrs.length)
             throw new Error("Failed to parse attributes");

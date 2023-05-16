@@ -202,6 +202,19 @@ test(
 );
 
 test(
+  "Handle consecutive quotes",
+  '<a {{#if (equals value " do not "" show user ") }} hidden {{/if}}>Users</a>',
+  '<a {{#if (equals value " do not "" show user ") }} hidden {{/if}}>Users</a>',
+  false
+);
+
+test(
+  "Preserve quoted strings",
+  "before\"  leave  m\\\"e  alone\"  '  and  m\\'e  too'after",
+  "before\"  leave  m\\\"e  alone\" '  and  m\\'e  too'after"
+);
+
+test(
   "Handle invalid HTML",
   "< this is a very long sentence to test the regex",
   "< this is a very long sentence to test the regex",
