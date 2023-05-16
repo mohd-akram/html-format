@@ -182,7 +182,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
                     : attrToken.groups.singleQuotedAttrValue
                     ? `='${attrToken.groups.singleQuotedAttrValue}'`
                     : attrToken.groups.unquotedAttrValue
-                    ? `=${attrToken.groups.quotedAttrValue}`
+                    ? `=${attrToken.groups.unquotedAttrValue}`
                     : ""
                 }`
               );
