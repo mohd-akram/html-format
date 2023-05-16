@@ -88,9 +88,11 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
       if (!specialElement) {
         if (s == "\n") pendingIndent = true;
         else {
-          if (lineLength + s.length > width) {
-            if (/^[ \t]+$/.test(s)) continue;
-            if (/^[ \t]+$/.test(output[output.length - 1])) output.pop();
+          if (
+            lineLength + s.length > width &&
+            /^[ \t]+$/.test(output[output.length - 1])
+          ) {
+            output.pop();
             addOutput("\n");
           }
           if (pendingIndent) {

@@ -20,11 +20,14 @@ function test(name, input, expected, strict = true, indent, width) {
     const actual = format(input, indent, width);
     assert.equal(actual, expected);
     if (width == undefined) width = 80;
-    for (const line of actual.split("\n"))
+    for (const line of actual.split("\n")) {
       assert.ok(
         line.length <= width,
         `line.length = ${line.length} > ${width}`
       );
+      // Ensure no trailing whitespace
+      assert.ok(!/\s+$/.test(line));
+    }
   });
 }
 
@@ -181,10 +184,10 @@ test(
 test(
   "Different indent and width",
   '<body>\n<main class="bg">   </main>\n</body>',
-  '<body>\n    <main class="bg"\n        > </main>\n</body>',
+  '<body>\n    <main class="bg">\n    </main>\n</body>',
   true,
   " ".repeat(4),
-  20
+  21
 );
 
 test(
