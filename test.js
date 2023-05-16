@@ -191,3 +191,5 @@ test(
 test("Handle invalid HTML", "<", "<");
 
 test("Void tags work correctly", "<br>\n<br>", "<br>\n<br>");
+
+test("Handle self-closing tag", "<br / >", "<br>");

@@ -5,12 +5,12 @@ const singleQuotedAttrValue = String.raw`'(?<singleQuotedAttrValue>[^']*)'`;
 const unquotedAttrValue = String.raw`(?<unquotedAttrValue>[^\s>"']*)`;
 
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
-const attr = String.raw`(?<attrSpace>\s+)(?<attrName>[^=\s>]+)(?:\s*=\s*(?:${attrValue}))?`;
+const attr = String.raw`(?<attrSpace>\s+)(?<attrName>[^=\s>/]+)(?:\s*=\s*(?:${attrValue}))?`;
 
 const tokens = {
   comment: String.raw`<!--.*?-->`,
   dtd: String.raw`<![^>]+>`,
-  startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
+  startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*/?\s*>`,
   endTag: String.raw`<\s*/(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
   text: String.raw`[^<\s]+`,
