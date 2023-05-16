@@ -129,11 +129,10 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
         token.groups.dtd ||
         token.groups.comment ||
         token.groups.wildcard ||
-        token.groups.quotedString
+        token.groups.quotedString ||
+        token.groups.text
       ) {
         addOutput(token[0]);
-      } else if (token.groups.text) {
-        addOutput(token[0].replace(/[ \t]+/g, " "));
       } else if (token.groups.startTag) {
         const tagName = token.groups.startTagName.toLowerCase();
 
