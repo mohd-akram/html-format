@@ -146,6 +146,8 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
         ++level;
 
+        let selfClosing = voidTags.has(tagName);
+
         if (token.groups.attrs) {
           let { lastIndex } = attrLexer;
           let attrToken;
@@ -157,12 +159,14 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
               ))
           ) {
             ({ lastIndex } = attrLexer);
-            // Ignore slash used in self-closing tag
+
+            // Detect self-closing tag
             if (
               lastIndex == token.groups.attrs.length &&
               token.groups.attrText == "/"
-            )
-              continue;
+            ) {
+              selfClosing = true;
+            }
 
             // For testing
             if (
@@ -199,7 +203,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
         addOutput(">");
 
-        if (voidTags.has(tagName)) --level;
+        if (selfClosing) --level;
       }
     } else addOutput(token[0]);
   }

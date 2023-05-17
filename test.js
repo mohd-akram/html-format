@@ -233,7 +233,12 @@ test(
 
 test("Void tags work correctly", "<br>\n<br>", "<br>\n<br>");
 
-test("Handle self-closing tag", "<br / >", "<br>");
+test(
+  "Handle self-closing tag",
+  "<circle / >\n<circle />",
+  "<circle />\n<circle />",
+  false
+);
 
 test(
   "Handle arbitrary text in tag",
