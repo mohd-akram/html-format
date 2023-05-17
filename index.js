@@ -2,7 +2,8 @@ const tagName = String.raw`[^/\s>]+`;
 
 const quotedAttrValue = String.raw`"(?<quotedAttrValue>[^"]*)"`;
 const singleQuotedAttrValue = String.raw`'(?<singleQuotedAttrValue>[^']*)'`;
-const unquotedAttrValue = String.raw`(?<unquotedAttrValue>[^\s>"']*)`;
+// https://mothereff.in/unquoted-attributes
+const unquotedAttrValue = String.raw`(?<unquotedAttrValue>[^\s"'\`=<>]+)`;
 
 const attrName = String.raw`[^=\s>/"']+(?=[=>\s]|$)`;
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
