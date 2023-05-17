@@ -20,7 +20,7 @@ const tokens = {
   comment: String.raw`<!--.*?-->`,
   dtd: String.raw`<![^>]+>`,
   startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
-  endTag: String.raw`<\s*/(?<endTagName>${tagName})\s*>`,
+  endTag: String.raw`<\s*/\s*(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
   quotedString,
   text: String.raw`[^<\s'"]+`,
