@@ -97,10 +97,8 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
             addOutput("\n");
           }
           if (pendingIndent) {
-            const ind = indent.repeat(level);
-            output.push(ind);
             pendingIndent = false;
-            lineLength += ind.length;
+            addOutput(indent.repeat(level));
           }
         }
       }
