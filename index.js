@@ -127,7 +127,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
     if (!specialElement) {
       if (token.groups.space) {
-        addOutput(...(token[0].match(/\n/g) ?? [" "]));
+        addOutput(...(token[0].match(/\n/g)?.slice(0, 2) ?? [" "]));
       } else if (
         token.groups.dtd ||
         token.groups.comment ||
