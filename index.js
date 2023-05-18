@@ -142,9 +142,6 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
         addOutput(`<${tagName}`);
 
-        if (["pre", "script", "style"].includes(tagName))
-          specialElement = tagName;
-
         ++level;
 
         let selfClosing = voidTags.has(tagName);
@@ -203,6 +200,9 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
         }
 
         addOutput(">");
+
+        if (["pre", "script", "style"].includes(tagName))
+          specialElement = tagName;
 
         if (selfClosing) --level;
       }

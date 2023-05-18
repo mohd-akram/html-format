@@ -133,6 +133,12 @@ test(
 );
 
 test(
+  "Format special tag attributes",
+  '<script\nsrc="https://ajax.googleapis.com/ajax/libs/d3js/7.8.4/d3.min.js"></script>',
+  '<script\n  src="https://ajax.googleapis.com/ajax/libs/d3js/7.8.4/d3.min.js"></script>'
+);
+
+test(
   "Do not indent after doctype",
   "<!doctype html>\n<html></html>",
   "<!doctype html>\n<html></html>"
