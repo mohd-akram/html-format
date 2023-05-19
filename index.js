@@ -1,4 +1,4 @@
-const tagName = String.raw`[^/\s>]+`;
+const tagName = String.raw`[A-Za-z][^/\s>]*`;
 
 const quotedAttrValue = String.raw`"(?<quotedAttrValue>[^"]*)"`;
 const singleQuotedAttrValue = String.raw`'(?<singleQuotedAttrValue>[^']*)'`;
