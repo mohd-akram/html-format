@@ -1,5 +1,10 @@
 const tagName = String.raw`[A-Za-z][^/\s>]*`;
 
+// Preserve strings in templates and such
+const doubleQuotedString = String.raw`"(?:\\[^<>]|[^\\"<>])*"`;
+const singleQuotedString = String.raw`'(?:\\[^<>]|[^\\'<>])*'`;
+const quotedString = String.raw`${doubleQuotedString}|${singleQuotedString}`;
+
 const quotedAttrValue = String.raw`"(?<quotedAttrValue>[^"]*)"`;
 const singleQuotedAttrValue = String.raw`'(?<singleQuotedAttrValue>[^']*)'`;
 // https://mothereff.in/unquoted-attributes
@@ -7,19 +12,17 @@ const unquotedAttrValue = String.raw`(?<unquotedAttrValue>[^\s"'\`=<>]+)`;
 
 const attrName = String.raw`[^=\s>/"']+(?=[=>\s]|$)`;
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
+const attrNameValue = String.raw`(?<attrName>${attrName})(?:\s*=\s*(?:${attrValue}))?`;
 
-// Preserve strings in templates and such
-const doubleQuotedString = String.raw`"(?:\\[^<>]|[^\\"<>])*"`;
-const singleQuotedString = String.raw`'(?:\\[^<>]|[^\\'<>])*'`;
-const quotedString = String.raw`${doubleQuotedString}|${singleQuotedString}`;
+// Make sure not to swallow the closing slash if one exists
+const attrText = String.raw`(?:${quotedString}|[^\s>]*[^\s>/]|[^\s>]*/(?!\s*>))(?=[\s>]|$)`;
 
-const attrText = String.raw`(?:${quotedString})|[^\s>]+`;
-const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:(?<attrName>${attrName})(?:\s*=\s*(?:${attrValue}))?|(?<attrText>${attrText}))`;
+const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:${attrNameValue}|(?<attrText>${attrText}))`;
 
 const tokens = {
   comment: String.raw`<!--.*?-->`,
   dtd: String.raw`<![^>]+>`,
-  startTag: String.raw`<(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
+  startTag: String.raw`<(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*(?<closingSlash>/?)\s*>`,
   endTag: String.raw`</(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
   quotedString,
@@ -144,8 +147,6 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
         ++level;
 
-        let selfClosing = voidTags.has(tagName);
-
         if (token.groups.attrs) {
           let { lastIndex } = attrLexer;
           let attrToken;
@@ -157,14 +158,6 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
               ))
           ) {
             ({ lastIndex } = attrLexer);
-
-            // Detect self-closing tag
-            if (
-              lastIndex == token.groups.attrs.length &&
-              token.groups.attrText == "/"
-            ) {
-              selfClosing = true;
-            }
 
             // For testing
             if (
@@ -199,12 +192,15 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
             throw new Error("Failed to parse attributes");
         }
 
-        addOutput(">");
+        const hasClosingSlash = Boolean(token.groups.closingSlash);
+
+        // Strip closing slashes for void tags
+        addOutput(hasClosingSlash ? " />" : ">");
 
         if (["pre", "script", "style"].includes(tagName))
           specialElement = tagName;
 
-        if (selfClosing) --level;
+        if (hasClosingSlash || voidTags.has(tagName)) --level;
       }
     } else addOutput(token[0]);
   }
