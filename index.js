@@ -19,8 +19,8 @@ const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:(?<attrName>${attrName}
 const tokens = {
   comment: String.raw`<!--.*?-->`,
   dtd: String.raw`<![^>]+>`,
-  startTag: String.raw`<\s*(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
-  endTag: String.raw`<\s*/\s*(?<endTagName>${tagName})\s*>`,
+  startTag: String.raw`<(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*>`,
+  endTag: String.raw`</(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
   quotedString,
   text: String.raw`[^<\s'"]+`,

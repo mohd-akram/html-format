@@ -74,8 +74,6 @@ test(
   '<div id="container"\n  class="grid"></div>'
 );
 
-test("Remove tag space", "< div >< /div >", "<div></div>");
-
 test(
   "Remove extra attribute space 1",
   '<div id="container"  class="grid"></div>',
@@ -164,7 +162,7 @@ test(
 
 test(
   "Format element after empty comment",
-  "<!---->\n< div>  </div>",
+  "<!---->\n<div>  </div>",
   "<!---->\n<div> </div>"
 );
 
