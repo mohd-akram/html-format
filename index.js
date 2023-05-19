@@ -9,8 +9,8 @@ const attrName = String.raw`[^=\s>/"']+(?=[=>\s]|$)`;
 const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquotedAttrValue}`;
 
 // Preserve strings in templates and such
-const doubleQuotedString = String.raw`"(?:\\.|[^\\"\n])*"`;
-const singleQuotedString = String.raw`'(?:\\.|[^\\'\n])*'`;
+const doubleQuotedString = String.raw`"(?:\\[^<>]|[^\\"<>])*"`;
+const singleQuotedString = String.raw`'(?:\\[^<>]|[^\\'<>])*'`;
 const quotedString = String.raw`${doubleQuotedString}|${singleQuotedString}`;
 
 const attrText = String.raw`(?:${quotedString})|[^\s>]+`;

@@ -153,7 +153,8 @@ test(
 test(
   "Do not parse tags inside special elements 1",
   '<script>html = "</div>  </div>"</script><div>  </div>',
-  '<script>html = "</div>  </div>"</script><div> </div>'
+  '<script>html = "</div>  </div>"</script><div> </div>',
+  false
 );
 test(
   "Do not parse tags inside special elements 2",
