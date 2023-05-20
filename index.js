@@ -1,8 +1,9 @@
 const tagName = String.raw`[A-Za-z][^/\s>]*`;
 
 // Preserve strings in templates and such
-const doubleQuotedString = String.raw`"(?:\\[^<>]|[^\\"<>])*"`;
-const singleQuotedString = String.raw`'(?:\\[^<>]|[^\\'<>])*'`;
+// Avoid apostrophes and unintentional captures
+const doubleQuotedString = String.raw`(?<!\w)"(?:\\[^<>\n]|[^\\"<>\n])*"(?!\w)`;
+const singleQuotedString = String.raw`(?<!\w)'(?:\\[^<>\n]|[^\\'<>\n])*'(?!\w)`;
 const quotedString = String.raw`${doubleQuotedString}|${singleQuotedString}`;
 
 const quotedAttrValue = String.raw`"(?<quotedAttrValue>[^"]*)"`;

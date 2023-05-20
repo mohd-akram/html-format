@@ -224,8 +224,8 @@ test(
 
 test(
   "Preserve quoted strings",
-  "before\"  leave  m\\\"e  alone\"  '  and  m\\'e  too'after",
-  "before\"  leave  m\\\"e  alone\" '  and  m\\'e  too'after"
+  ":\"  leave  m\\\"e  alone\"  '  and  m\\'e  too':",
+  ":\"  leave  m\\\"e  alone\" '  and  m\\'e  too':"
 );
 
 test(
