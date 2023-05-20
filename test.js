@@ -151,8 +151,7 @@ test(
 test(
   "Do not parse tags inside special elements 1",
   '<script>html = "</div>  </div>"</script><div>  </div>',
-  '<script>html = "</div>  </div>"</script><div> </div>',
-  false
+  '<script>html = "</div>  </div>"</script><div> </div>'
 );
 test(
   "Do not parse tags inside special elements 2",
@@ -232,8 +231,7 @@ test(
 test(
   "Ignore quoted strings with newlines",
   "Collector's  \n<div>\nstuff\n</div>'",
-  "Collector's\n<div>\n  stuff\n</div>'",
-  false
+  "Collector's\n<div>\n  stuff\n</div>'"
 );
 
 test(

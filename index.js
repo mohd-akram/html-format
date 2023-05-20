@@ -25,9 +25,8 @@ const tokens = {
   startTag: String.raw`<(?<startTagName>${tagName})(?<attrs>(?:${attr})*)\s*(?<closingSlash>/?)\s*>`,
   endTag: String.raw`</(?<endTagName>${tagName})\s*>`,
   space: String.raw`\s+`,
-  quotedString,
-  text: String.raw`[^<\s'"]+`,
-  wildcard: String.raw`.+?`,
+  text: String.raw`[^<\s"']+|${quotedString}|['"]`,
+  wildcard: String.raw`.`,
 };
 
 const grammar = Object.entries(tokens)
@@ -133,11 +132,10 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
       if (token.groups.space) {
         addOutput(...(token[0].match(/\n/g)?.slice(0, 2) ?? [" "]));
       } else if (
-        token.groups.dtd ||
         token.groups.comment ||
-        token.groups.wildcard ||
-        token.groups.quotedString ||
-        token.groups.text
+        token.groups.dtd ||
+        token.groups.text ||
+        token.groups.wildcard
       ) {
         addOutput(token[0]);
       } else if (token.groups.startTag) {
