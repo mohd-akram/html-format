@@ -192,13 +192,11 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
 
         const hasClosingSlash = Boolean(token.groups.closingSlash);
 
-        // Strip closing slashes for void tags
         addOutput(hasClosingSlash ? " />" : ">");
 
-        if (["pre", "script", "style"].includes(tagName))
-          specialElement = tagName;
-
         if (hasClosingSlash || voidTags.has(tagName)) --level;
+        else if (["pre", "script", "style"].includes(tagName))
+          specialElement = tagName;
       }
     } else addOutput(token[0]);
   }
