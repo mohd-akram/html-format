@@ -15,9 +15,9 @@ const attrValue = String.raw`${quotedAttrValue}|${singleQuotedAttrValue}|${unquo
 const attrNameValue = String.raw`(?<attrName>${attrName})(?:\s*=\s*(?:${attrValue}))?`;
 
 // Make sure not to swallow the closing slash if one exists
-const attrText = String.raw`(?:${quotedString}|[^\s>]*[^\s>/]|[^\s>]*/(?!\s*>))(?=[\s>]|$)`;
+const attrText = String.raw`${quotedString}|[^\s>]*[^\s>/]|[^\s>]*/(?!\s*>)`;
 
-const attr = String.raw`(?<attrSpace>(?<=["'])\s*|\s+)(?:${attrNameValue}|(?<attrText>${attrText}))`;
+const attr = String.raw`(?<attrSpace>\s*)(?:${attrNameValue}|(?<attrText>${attrText}))`;
 
 const tokens = {
   comment: String.raw`<!--.*?-->`,

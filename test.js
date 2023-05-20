@@ -179,6 +179,13 @@ test(
 );
 
 test(
+  "Handle attribute-like text inside tag",
+  "<div {% if a==2 %}hidden{% endif %}>",
+  "<div {% if a==2 %}hidden{% endif %}>",
+  false
+);
+
+test(
   "Different indent",
   '<body>\n<main class="bg">   </main>\n</body>',
   '<body>\n    <main class="bg"> </main>\n</body>',
