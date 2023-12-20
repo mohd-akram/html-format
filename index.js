@@ -94,7 +94,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
     for (const s of args) {
       let out = "";
 
-      if (!specialElement && /^\s*$/.test(s)) {
+      if (!s || (!specialElement && /^\s*$/.test(s))) {
         const newline = span.indexOf("\n");
         const len = newline == -1 ? span.length : newline;
         if (lastSpace) {

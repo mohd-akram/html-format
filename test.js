@@ -273,6 +273,12 @@ test(
 );
 
 test(
+  "Preserve incomplete HTML",
+  "<pre>do not remove me",
+  "<pre>do not remove me"
+);
+
+test(
   "Handle invalid HTML",
   "< this is a very long sentence to test the regex",
   "< this is a very long sentence to test the regex",
