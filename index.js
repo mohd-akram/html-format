@@ -90,31 +90,34 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
   let spanLevel = 0;
   let lastSpace = "";
 
+  const flushOutput = () => {
+    if (lastSpace && lastSpace != "\n") {
+      const newline = span.indexOf("\n");
+      const len = newline == -1 ? span.length : newline;
+      if (lineLength + lastSpace.length + len > width) lastSpace = "\n";
+    }
+
+    const ind = lastSpace == "\n" && span ? indent.repeat(spanLevel) : "";
+    const out = `${lastSpace}${ind}${span}`;
+
+    if (out) {
+      const pos = out.lastIndexOf("\n");
+      if (pos == -1) lineLength += out.length;
+      else lineLength = out.length - pos - 1;
+      output.push(out);
+    }
+
+    span = lastSpace = "";
+  };
+
   const addOutput = (/** @type {string[]} */ ...args) => {
     for (const s of args) {
-      let out = "";
-
-      if (!s || (!specialElement && /^\s+$/.test(s))) {
-        const newline = span.indexOf("\n");
-        const len = newline == -1 ? span.length : newline;
-        if (lastSpace) {
-          if (lineLength + lastSpace.length + len > width) lastSpace = "\n";
-          out += lastSpace;
-          if (lastSpace == "\n" && span) out += indent.repeat(spanLevel);
-        }
-        out += span;
-        span = "";
+      if (!specialElement && /^\s+$/.test(s)) {
+        flushOutput();
         lastSpace = s;
       } else {
         if (!span) spanLevel = level;
         span += s;
-      }
-
-      if (out) {
-        const pos = out.lastIndexOf("\n");
-        if (pos == -1) lineLength += out.length;
-        else lineLength = out.length - pos - 1;
-        output.push(out);
       }
     }
   };
@@ -207,7 +210,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
   }
 
   // Flush remaining output
-  addOutput("");
+  flushOutput();
 
   let newline = false;
   while (/^\s+$/.test(output[output.length - 1])) {
