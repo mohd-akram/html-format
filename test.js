@@ -146,8 +146,8 @@ test(
 
 test(
   "Do not format pre tag content",
-  '<pre  class= "code">  s  p  a  c  e  </pre>  s',
-  '<pre class="code">  s  p  a  c  e  </pre> s'
+  '<pre  class= "code">\ns  p  a  c  e  </pre>  s',
+  '<pre class="code">\ns  p  a  c  e  </pre> s'
 );
 
 test(
