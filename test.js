@@ -42,7 +42,15 @@ test(
 
 test("Preserve newlines", "<body>\n\n</body>", "<body>\n\n</body>");
 
-test("Preserve trailing newline", "<body></body>\n\n\n", "<body></body>\n");
+test(
+  "Preserve nested newlines",
+  "<html>\n  <head>\n\n    <script></script></head></html>",
+  "<html>\n  <head>\n\n    <script></script></head></html>"
+);
+
+test("Preserve trailing newline", "<body></body>\n", "<body></body>\n");
+
+test("Trim trailing newlines", "<body></body>\n\n\n", "<body></body>\n");
 
 test(
   "Indent once",
@@ -107,9 +115,33 @@ test(
 );
 
 test(
+  "Do not wrap after long attribute with newline",
+  '<div class="grid-cell-row-num-col-5 text-align text-center position-absolute\ndisplay-block"></div>no wrap needed',
+  '<div class="grid-cell-row-num-col-5 text-align text-center position-absolute\ndisplay-block"></div>no wrap needed'
+);
+
+test(
   "Wrap long line",
   "<p>\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>",
   "<p>\n  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor\n  incididunt ut labore et dolore magna aliqua.</p>"
+);
+
+test(
+  "Wrap long tag",
+  '<a class="external" href="https://example.com/0123456789/0123456789/01234">Go</a>',
+  '<a class="external"\n  href="https://example.com/0123456789/0123456789/01234">Go</a>'
+);
+
+test(
+  "Wrap after special element",
+  "<pre>this is an incredibly long sentence that never seems to end</pre> this should actually wrap",
+  "<pre>this is an incredibly long sentence that never seems to end</pre> this\nshould actually wrap"
+);
+
+test(
+  "Do not wrap after special element",
+  "<pre>this is an incredibly long sentence that never seems to end\n starting a new paragraph</pre> this should not actually wrap",
+  "<pre>this is an incredibly long sentence that never seems to end\n starting a new paragraph</pre> this should not actually wrap"
 );
 
 test(
@@ -134,6 +166,12 @@ test(
   "Format special tag attributes",
   '<script\nsrc="https://ajax.googleapis.com/ajax/libs/d3js/7.8.4/d3.min.js"></script>',
   '<script\n  src="https://ajax.googleapis.com/ajax/libs/d3js/7.8.4/d3.min.js"></script>'
+);
+
+test(
+  "Wrap special tag",
+  '<script async src="https://www.googletagmanager.com/gtag/js?id=0123456789"></script>',
+  '<script async\n  src="https://www.googletagmanager.com/gtag/js?id=0123456789"></script>'
 );
 
 test(

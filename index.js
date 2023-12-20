@@ -85,33 +85,37 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
   let specialElement = null;
   let level = 0;
 
-  let pendingIndent = false;
   let lineLength = 0;
+  let span = "";
+  let spanLevel = 0;
+  let lastSpace = "";
 
   const addOutput = (/** @type {string[]} */ ...args) => {
     for (const s of args) {
-      if (!specialElement) {
-        if (s == "\n") pendingIndent = true;
-        else {
-          const newline = s.indexOf("\n");
-          const len = newline == -1 ? s.length : newline;
-          if (
-            lineLength + len > width &&
-            /^[ \t]+$/.test(output[output.length - 1])
-          ) {
-            output.pop();
-            addOutput("\n");
-          }
-          if (pendingIndent) {
-            pendingIndent = false;
-            addOutput(indent.repeat(level));
-          }
+      let out = "";
+
+      if (!specialElement && /^\s*$/.test(s)) {
+        const newline = span.indexOf("\n");
+        const len = newline == -1 ? span.length : newline;
+        if (lastSpace) {
+          if (lineLength + lastSpace.length + len > width) lastSpace = "\n";
+          out += lastSpace;
+          if (lastSpace == "\n" && span) out += indent.repeat(spanLevel);
         }
+        out += span;
+        span = "";
+        lastSpace = s;
+      } else {
+        if (!span) spanLevel = level;
+        span += s;
       }
-      const pos = s.lastIndexOf("\n");
-      if (pos == -1) lineLength += s.length;
-      else lineLength = s.length - pos - 1;
-      output.push(s);
+
+      if (out) {
+        const pos = out.lastIndexOf("\n");
+        if (pos == -1) lineLength += out.length;
+        else lineLength = out.length - pos - 1;
+        output.push(out);
+      }
     }
   };
 
@@ -201,6 +205,9 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
       }
     } else addOutput(token[0]);
   }
+
+  // Flush remaining output
+  addOutput("");
 
   let newline = false;
   while (/^\s+$/.test(output[output.length - 1])) {
