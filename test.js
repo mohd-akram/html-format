@@ -151,6 +151,12 @@ test(
 );
 
 test(
+  "Do not format textarea tag content",
+  '<textarea  class= "code">\ns  p  a  c  e  </textarea>  s',
+  '<textarea class="code">\ns  p  a  c  e  </textarea> s'
+);
+
+test(
   "Do not format style tag content",
   "<style>body {  }</style>",
   "<style>body {  }</style>"

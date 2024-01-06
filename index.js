@@ -203,7 +203,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
         addOutput(hasClosingSlash ? " />" : ">");
 
         if (hasClosingSlash || voidTags.has(tagName)) --level;
-        else if (["pre", "script", "style"].includes(tagName))
+        else if (["pre", "textarea", "script", "style"].includes(tagName))
           specialElement = tagName;
       }
     } else addOutput(token[0]);
