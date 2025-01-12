@@ -132,6 +132,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
       if (tagName == specialElement) specialElement = null;
       if (!specialElement) {
         --level;
+        if (level < 0) level = 0;
         addOutput(`</${tagName}>`);
       }
     }
