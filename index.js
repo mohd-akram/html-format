@@ -131,7 +131,8 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
       const tagName = token.groups.endTagName.toLowerCase();
       if (tagName == specialElement) specialElement = null;
       if (!specialElement) {
-        --level;
+		--level;
+		if (level < 0) level = 0;
         addOutput(`</${tagName}>`);
       }
     }
