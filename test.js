@@ -16,6 +16,10 @@ const format = require("./index.js");
  */
 function test(name, input, expected, strict = true, indent, width) {
   nodeTest.test(name, () => {
+    if (!strict) {
+      /** @type {any} */ (format).__strict = true;
+      assert.throws(() => format(input, indent, width));
+    }
     /** @type {any} */ (format).__strict = strict;
     const actual = format(input, indent, width);
     assert.equal(actual, expected);
@@ -145,25 +149,25 @@ test(
 );
 
 test(
-  "Do not format pre tag content",
+  "Do not format pre element content",
   '<pre  class= "code">\ns  p  a  c  e  </pre>  s',
   '<pre class="code">\ns  p  a  c  e  </pre> s'
 );
 
 test(
-  "Do not format textarea tag content",
+  "Do not format textarea element content",
   '<textarea  class= "code">\ns  p  a  c  e  </textarea>  s',
   '<textarea class="code">\ns  p  a  c  e  </textarea> s'
 );
 
 test(
-  "Do not format style tag content",
+  "Do not format style element content",
   "<style>body {  }</style>",
   "<style>body {  }</style>"
 );
 
 test(
-  "Do not format script tag content",
+  "Do not format script element content",
   '<script  src="js/main.js">  console.log(  )  </script>',
   '<script src="js/main.js">  console.log(  )  </script>'
 );
@@ -193,12 +197,13 @@ test(
 );
 
 test(
-  "Do not parse tags inside special elements 1",
+  "Do not parse tags inside quotes",
   '<script>html = "</div>  </div>"</script><div>  </div>',
   '<script>html = "</div>  </div>"</script><div> </div>'
 );
+
 test(
-  "Do not parse tags inside special elements 2",
+  "Do not parse tags inside comments",
   "<!--< div>\n</div>  -->\n<div  ></div>",
   "<!--< div>\n</div>  -->\n<div></div>"
 );
@@ -299,11 +304,12 @@ test(
   "<circle />\n<circle />"
 );
 
-test("Handle extraneous slashes", "<circle x/ / >", "<circle x/ />", false);
+test("Handle extraneous slashes 1", "<circle x/y / >", "<circle x/y />", false);
+test("Handle extraneous slashes 2", "<circle / / >", "<circle / />", false);
 
 test(
   "Handle arbitrary text in tag",
-  '<div {{#if 1}}class="active"{{/if}}>\nstuff\n</div>',
-  '<div {{#if 1}}class="active"{{/if}}>\n  stuff\n</div>',
+  '<div =x {{#if 1}}class="active"{{/if}} =>\nstuff\n</div>',
+  '<div =x {{#if 1}}class="active"{{/if}} =>\n  stuff\n</div>',
   false
 );
