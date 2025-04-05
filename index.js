@@ -74,7 +74,12 @@ const voidTags = new Set([
   "wbr",
 ]);
 
-function format(/** @type {string} */ html, indent = "  ", width = 80) {
+function format(
+  /** @type {string} */ html,
+  indent = "  ",
+  width = 80,
+  /** @type {((token: string, space: string) => string[] | void) | undefined} */ transform
+) {
   const lexer = new RegExp(grammar, "gys");
   const attrLexer = new RegExp(attr, "gy");
 
@@ -89,8 +94,18 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
   let span = "";
   let spanLevel = 0;
   let lastSpace = "";
+  let verbatimToken = "";
+
+  const flushVerbatimOutput = () => {
+    if (verbatimToken) {
+      addToken(verbatimToken, true, transform);
+      verbatimToken = "";
+    }
+  };
 
   const flushOutput = () => {
+    flushVerbatimOutput();
+
     if (lastSpace && lastSpace != "\n") {
       const newline = span.indexOf("\n");
       const len = newline == -1 ? span.length : newline;
@@ -110,17 +125,37 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
     span = lastSpace = "";
   };
 
-  const addOutput = (/** @type {string[]} */ ...args) => {
-    for (const s of args) {
-      if (!specialElement && /^\s+$/.test(s)) {
-        flushOutput();
-        lastSpace = s;
-      } else {
-        if (!span) spanLevel = level;
-        span += s;
+  const addToken = (
+    /** @type {string} */ token,
+    /** @type {boolean} */ verbatim,
+    /** @type {typeof transform} */ t
+  ) => {
+    const isSpace = /^\s+$/.test(token);
+
+    if (t && !isSpace) {
+      const tokens = t(token, lastSpace);
+      if (tokens) {
+        if (!span) lastSpace = "";
+        for (const token of tokens) addToken(token, verbatim);
+        return;
       }
     }
+
+    if (!verbatim && isSpace) {
+      flushOutput();
+      lastSpace = token;
+    } else {
+      if (!span) spanLevel = level;
+      span += token;
+    }
   };
+
+  const addOutput = (/** @type {string[]} */ ...tokens) => {
+    flushVerbatimOutput();
+    for (const t of tokens) addToken(t, false, transform);
+  };
+
+  const addVerbatimOutput = (/** @type {string} */ s) => (verbatimToken += s);
 
   for (const token of getTokens(lexer, html)) {
     // For testing
@@ -206,7 +241,7 @@ function format(/** @type {string} */ html, indent = "  ", width = 80) {
         else if (["pre", "textarea", "script", "style"].includes(tagName))
           specialElement = tagName;
       }
-    } else addOutput(token[0]);
+    } else addVerbatimOutput(token[0]);
   }
 
   // Flush remaining output

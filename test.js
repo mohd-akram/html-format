@@ -13,15 +13,16 @@ const format = require("./index.js");
  * @param {boolean} [strict]
  * @param {string} [indent]
  * @param {number} [width]
+ * @param {Parameters<typeof format>[3]} [transform]
  */
-function test(name, input, expected, strict = true, indent, width) {
+function test(name, input, expected, strict = true, indent, width, transform) {
   nodeTest.test(name, () => {
     if (!strict) {
       /** @type {any} */ (format).__strict = true;
       assert.throws(() => format(input, indent, width));
     }
     /** @type {any} */ (format).__strict = strict;
-    const actual = format(input, indent, width);
+    const actual = format(input, indent, width, transform);
     assert.equal(actual, expected);
     if (width == undefined) width = 80;
     for (const line of actual.split("\n")) {
@@ -312,4 +313,77 @@ test(
   '<div =x {{#if 1}}class="active"{{/if}} =>\nstuff\n</div>',
   '<div =x {{#if 1}}class="active"{{/if}} =>\n  stuff\n</div>',
   false
+);
+
+test(
+  "Transform",
+  "<div> this is a long line </div>",
+  "<div> this\n  is a\n  long\n  line\n</div>",
+  true,
+  "  ",
+  10,
+  (token, space) => [space, token]
+);
+
+test(
+  "Transform with newline in verbatim text",
+  "<script>\n</script>",
+  "<script>\n</script>",
+  true,
+  "  ",
+  10,
+  (token, space) => [space, token]
+);
+
+test(
+  "Transform with changed space",
+  "<div>\n<div><div></div></div></div>",
+  "\n<div>\n  <div>\n    <div>\n    </div>\n  </div>\n</div>",
+  true,
+  "  ",
+  80,
+  (token) => (["<div", "</div>"].includes(token) ? ["\n", token] : undefined)
+);
+
+test(
+  "Transform with removed space",
+  "\n<div>\n  <div>\n    <div>\n    </div>\n  </div>\n</div>",
+  "<div><div><div></div></div></div>",
+  true,
+  "  ",
+  80,
+  (token) => (/^<\/?div>?$/.test(token) ? [token] : undefined)
+);
+
+test(
+  "Transform script",
+  "<script>\n// my first program\nconsole.log('hello world');\n</script>",
+  "<script>\nconsole.log('hello world');\n</script>",
+  true,
+  "  ",
+  80,
+  (() => {
+    let inScript = false;
+    let inScriptTag = false;
+    let script = "";
+    return (token, space) => {
+      if (inScript) {
+        if (token == "</script>") {
+          // Remove comments
+          const out = [script.replace(/^\s*\/\/.*$/gm, ""), space, token];
+          script = "";
+          inScript = false;
+          return out;
+        }
+        script += space + token;
+        // Return nothing until we've collected the entire script
+        return [];
+      }
+      if (inScriptTag && token == ">") {
+        inScriptTag = false;
+        inScript = true;
+      }
+      if (token == "<script") inScriptTag = true;
+    };
+  })()
 );
